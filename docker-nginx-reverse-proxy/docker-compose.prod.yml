@@ -1,0 +1,37 @@
+version: '3'
+
+services:
+  reverse-proxy:
+    image: nginx:1.19.10
+    container_name: reverse_proxy
+    depends_on:
+      - auth-service
+      - portal
+    volumes:
+      - ./server/nginx.dev.conf:/etc/nginx/nginx.conf
+    ports:
+      - 80:80
+
+  portal:
+    image: portal
+    container_name: portal
+    build:
+      context: ./portal
+      dockerfile: ./Dockerfile.prod
+    depends_on:
+      - auth-service
+    ports:
+      - 3000:3000
+    environment:
+      - NODE_ENV=production
+
+  auth-service:
+    image: auth-service
+    container_name: auth-service
+    build:
+      context: ./auth-service
+      dockerfile: ./Dockerfile
+    ports:
+      - 8080:8080
+    environment:
+      - PORT=8080
